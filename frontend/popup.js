@@ -17,29 +17,25 @@ function extractAndSendElements(userInput) {
     function extractInteractableElements() {
         const interactableSelectors = 'a, button, input, select, textarea, [role="button"], [role="link"]';
         const elements = document.querySelectorAll(interactableSelectors);
-
+    
         const elementsData = [];
         elements.forEach((element, index) => {
-            let elementId = element.id || `el-${index + 1}`;
-            if (!element.id) {
-                element.setAttribute('id', elementId);
-            }
-
+            element.removeAttribute('id');
+    
+            const elementId = (index + 1).toString();
+            element.setAttribute('id', elementId);
+    
             const rect = element.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
-            const textContent = element.textContent.trim() || null;
-
+    
+            const textContent = element.textContent.trim();
+    
             elementsData.push({
                 id: elementId,
-                tagName: element.tagName,
-                centerX: centerX,
-                centerY: centerY,
-                text: textContent,
+                type: element.tagName,
+                ...(textContent && { text: textContent })
             });
         });
-
+    
         return elementsData;
     }
 
@@ -50,7 +46,7 @@ function extractAndSendElements(userInput) {
         elements: extractedData,
     };
 
-    fetch("http://localhost:3000/api/endpoint", {
+    fetch("http://localhost:3000/api/sendRequest", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
