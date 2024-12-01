@@ -7,35 +7,40 @@ document.getElementById("sendButton").addEventListener("click", async () => {
 
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        function: extractAndSendElements,
+        function: execute,
         args: [userInput], 
     });
 });
 
 
-function extractAndSendElements(userInput) {
-    // function extractInteractableElements() {
-    //     const interactableSelectors = 'a, button, input, select, textarea, [role="button"], [role="link"]';
-    //     const elements = document.querySelectorAll(interactableSelectors);
+
+function execute(userInput) {
+
+    function performActions(actions) {
+        actions.forEach(action => {
+            const element = document.getElementById(action.id);
+            if (!element) {
+                console.warn(`Element with ID ${action.id} not found.`);
+                return;
+            }
     
-    //     const elementsData = [];
-    //     elements.forEach((element, index) => {
-    //         element.removeAttribute('id');
-    
-    //         const elementId = (index + 1).toString();
-    //         element.setAttribute('id', elementId);
-    
-    //         const textContent = element.textContent.trim();
-    
-    //         elementsData.push({
-    //             id: elementId,
-    //             type: element.tagName,
-    //             ...(textContent && { text: textContent })
-    //         });
-    //     });
-    
-    //     return elementsData;
-    // }
+            switch (action.type) {
+                case 'click':
+                    element.click();
+                    break;
+                case 'type':
+                    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                        element.value = action.value;
+                        element.dispatchEvent(new Event('input', { bubbles: true })); 
+                    } else {
+                        console.warn(`Element with ID ${action.id} is not an input or textarea.`);
+                    }
+                    break;
+                default:
+                    console.warn(`Unknown action type: ${action.type}`);
+            }
+        });
+    }
 
     function extractInteractableElements() {
         const interactableSelectors = 'a, button, input, select, textarea, [role="button"], [role="link"]';
@@ -65,6 +70,7 @@ function extractAndSendElements(userInput) {
         return elementsData;
     }
 
+
     const extractedData = extractInteractableElements();
 
     const payload = {
@@ -81,13 +87,19 @@ function extractAndSendElements(userInput) {
     })
         .then(response => {
             if (response.ok) {
-                console.log("Data Sent Successfully")
+                return response.json(); 
+                
             } else {
-                console.log("Failed to send data.");
+                console.error("An error occurred");
+                alert("An error occurred");
             }
+        })
+        .then(data => {
+            performActions(data.parsedResponse);
         })
         .catch(error => {
             console.error("Error:", error);
-            alert("An error occurred while sending data.");
+            alert("An error occurred");
         });
 }
+
