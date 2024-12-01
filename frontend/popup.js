@@ -14,6 +14,29 @@ document.getElementById("sendButton").addEventListener("click", async () => {
 
 
 function extractAndSendElements(userInput) {
+    // function extractInteractableElements() {
+    //     const interactableSelectors = 'a, button, input, select, textarea, [role="button"], [role="link"]';
+    //     const elements = document.querySelectorAll(interactableSelectors);
+    
+    //     const elementsData = [];
+    //     elements.forEach((element, index) => {
+    //         element.removeAttribute('id');
+    
+    //         const elementId = (index + 1).toString();
+    //         element.setAttribute('id', elementId);
+    
+    //         const textContent = element.textContent.trim();
+    
+    //         elementsData.push({
+    //             id: elementId,
+    //             type: element.tagName,
+    //             ...(textContent && { text: textContent })
+    //         });
+    //     });
+    
+    //     return elementsData;
+    // }
+
     function extractInteractableElements() {
         const interactableSelectors = 'a, button, input, select, textarea, [role="button"], [role="link"]';
         const elements = document.querySelectorAll(interactableSelectors);
@@ -21,19 +44,23 @@ function extractAndSendElements(userInput) {
         const elementsData = [];
         elements.forEach((element, index) => {
             element.removeAttribute('id');
-    
             const elementId = (index + 1).toString();
             element.setAttribute('id', elementId);
     
-            const rect = element.getBoundingClientRect();
-    
             const textContent = element.textContent.trim();
     
-            elementsData.push({
+            const elementData = {
                 id: elementId,
                 type: element.tagName,
-                ...(textContent && { text: textContent })
-            });
+                ...(textContent && { text: textContent }),
+                ...(element.getAttribute('name') && { name: element.getAttribute('name') }),
+                ...(element.getAttribute('aria-label') && { ariaLabel: element.getAttribute('aria-label') }),
+                ...(element.getAttribute('placeholder') && { placeholder: element.getAttribute('placeholder') }),
+                ...(element.getAttribute('href') && { href: element.getAttribute('href') }),
+                ...(element.value && { value: element.value }),
+            };
+    
+            elementsData.push(elementData);
         });
     
         return elementsData;
