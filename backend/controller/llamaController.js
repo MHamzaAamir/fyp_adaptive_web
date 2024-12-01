@@ -5,6 +5,11 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const llamaController = {
     createPrompt: (userInput, elements) => {
         return `
+            You are a web agent. You will receive some html elements. Analyze them and select series of actions 
+            along with the id that fulfills User Request and do not add extra information. Correspondingly, Action should STRICTLY follow the format:
+            - Click [Numerical_Label] 
+            - Type [Numerical_Label]; [Content] 
+            - Scroll [Numerical_Label or WINDOW]; [up or down] 
             You are a web agent. You will receive some html elements. Donot give extra detail. Analyze them and select series of actions along with the id that fulfills User Request. Correspondingly, action should strictly follow the format with one id for each action:
             - Click [id] 
             - Type [id]; [Content] 
@@ -16,53 +21,40 @@ const llamaController = {
             - HTML Elements: ${JSON.stringify(elements)}
         `;
     },
-
-    parseCommands: (text) => {
-        if (!text) {
-            return [{ Wait: null }];
-        }
-
-        const commandPatterns = {
-            Click: /Click \[?(\d+)\]?/g,
-            Type: /Type \[?(\d+)\]?; (.*)/g,
-            Scroll: /Scroll \[?(\d+|WINDOW)\]?; \[?(up|down)\]?/g,
-            Scroll1: /Scroll \[?(up|down)\]?; \[?(\d+|WINDOW)\]?/g,
-            Wait: /Wait/g,
-            GoBack: /GoBack/g,
-            Bing: /Bing/g,
-            Google: /Google/g,
-            ANSWER: /ANSWER; (.*)/g,
-            FINISHED: /FINISHED/g,
-        };
-
-        const parsedCommands = [];
-
-        for (const [command, pattern] of Object.entries(commandPatterns)) {
-            const matches = [...text.matchAll(pattern)];
-            if (matches.length) {
-                matches.forEach((match) => {
-                    if (['Click', 'Type', 'Scroll', 'Scroll1', 'ANSWER'].includes(command)) {
-                        if (command === 'Scroll1') {
-                            parsedCommands.push({ Scroll: [...match.slice(1).reverse()] });
-                        } else {
-                            parsedCommands.push({ [command]: match.slice(1) });
-                        }
-                    } else {
-                        parsedCommands.push({ [command]: null });
-                    }
-                });
+    parseCommands(inputString) {
+        // Split the input string into lines and trim unnecessary whitespace
+        const lines = inputString.split('\n').map(line => line.trim());
+    
+        const commands = [];
+    
+        // Regular expression to match commands like "Click 17", "Type 7; laptop", etc.
+        const commandRegex = /(click|type)\s+(\d+)(?:;\s*([^\n]+))?/i;
+    
+        lines.forEach(line => {
+            // Attempt to match the command on each line
+            const match = line.match(commandRegex);
+    
+            if (match) {
+                const type = match[1].toLowerCase(); // Extract command type (e.g., 'click', 'type')
+                const id = parseInt(match[2], 10);  // Extract the ID number
+                const value = match[3]?.trim();    // Extract the value (if present)
+    
+                // Push the parsed command into the array
+                const commandObject = { type, id };
+                if (value) {
+                    commandObject.value = value; // Add the value property only if it's present
+                }
+                commands.push(commandObject);
             }
-        }
-
-        if (!parsedCommands.length) {
-            return [{ Wait: null }];
-        }
-
-        return parsedCommands;
+        });
+    
+        return commands;
     },
+    
 
     sendRequest: async (req, res) => {
         const { userInput, elements } = req.body;
+        
 
 
         if (!userInput || !elements) {
@@ -87,11 +79,10 @@ const llamaController = {
                     response = chatCompletion.choices[0]?.message?.content || "";
                 });
 
-            // Parse the response
-            // const parsedResponse = llamaController.parseCommands(response);
-            
-            console.log(response)
-            res.status(200).json({ message: "ok" });
+            //Parse the response
+            const parsedResponse = llamaController.parseCommands(response);
+    
+            res.status(200).json({ parsedResponse });
 
         } catch (error) {
             console.error("Error interacting with Llama:", error.message);
