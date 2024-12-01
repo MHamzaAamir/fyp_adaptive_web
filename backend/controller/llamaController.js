@@ -5,10 +5,11 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const llamaController = {
     createPrompt: (userInput, elements) => {
         return `
-            You are a web agent. You will receive some html elements. Donot give extra detail. Analyze them and select one or more actions along with the id that takes you closer to fullfilling user request. Select Multiple actions where possible such as during search. Correspondingly, action should strictly follow the format:
+            You are a web agent. You will receive some html elements. Donot give extra detail. Analyze them and select one or more actions along with the id that takes you closer to fullfilling user request. Select Multiple actions where possible such as during search. If you think the task is done then select Done. Correspondingly, action should strictly follow the format:
             - Click [id] 
             - Type [id]; [Content] 
             - Google
+            - Done
 
             replace [id] with the actual number and [Content] with actual text. dont use brackets.
     
@@ -28,6 +29,8 @@ const llamaController = {
     
         // Regular expression to match "Google" with optional leading characters
         const googleRegex = /[-\s]*google/i;
+
+        const doneRegex = /[-\s]*done/i;
     
         lines.forEach(line => {
             // Attempt to match the command on each line
@@ -47,6 +50,9 @@ const llamaController = {
             } else if (googleRegex.test(line)) {
                 // If the line matches "Google" with or without leading characters
                 commands.push({ type: "google" });
+            }else if (doneRegex.test(line)) {
+                // If the line matches "Done" with or without leading characters
+                commands.push({ type: "done" });
             }
         });
     
@@ -56,8 +62,7 @@ const llamaController = {
     sendRequest: async (req, res) => {
         const { userInput, elements } = req.body;
 
-        console.log(elements)
-
+        console.log("started")
 
         if (!userInput || !elements) {
             return res.status(400).json({ error: "userInput and HTML elements are required." });
@@ -82,10 +87,9 @@ const llamaController = {
                 });
             
             console.log(response)
-            //Parse the response
             const parsedResponse = llamaController.parseCommands(response);
-            
-            console.log(parsedResponse)
+
+            console.log("ended")
 
             res.status(200).json({ parsedResponse });
 
