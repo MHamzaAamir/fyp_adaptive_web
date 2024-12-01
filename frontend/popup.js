@@ -56,7 +56,6 @@ function extractAndSendElements(userInput) {
                 ...(element.getAttribute('name') && { name: element.getAttribute('name') }),
                 ...(element.getAttribute('aria-label') && { ariaLabel: element.getAttribute('aria-label') }),
                 ...(element.getAttribute('placeholder') && { placeholder: element.getAttribute('placeholder') }),
-                ...(element.getAttribute('href') && { href: element.getAttribute('href') }),
                 ...(element.value && { value: element.value }),
             };
     

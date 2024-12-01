@@ -5,7 +5,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const llamaController = {
     createPrompt: (userInput, elements) => {
         return `
-            You are a web agent. You will receive some html elements. Analyze them and select one of the following actions 
+            You are a web agent. You will receive some html elements. Analyze them and select series of actions 
             along with the id that fulfills User Request. Correspondingly, Action should STRICTLY follow the format:
             - Click [Numerical_Label] 
             - Type [Numerical_Label]; [Content] 
@@ -67,6 +67,7 @@ const llamaController = {
 
     sendRequest: async (req, res) => {
         const { userInput, elements } = req.body;
+        console.log(elements)
 
         if (!userInput || !elements) {
             return res.status(400).json({ error: "userInput and HTML elements are required." });
@@ -91,10 +92,10 @@ const llamaController = {
                 });
 
             // Parse the response
-            const parsedResponse = llamaController.parseCommands(response);
+            // const parsedResponse = llamaController.parseCommands(response);
             
-
-            res.status(200).json({ response });
+            console.log(response)
+            res.status(200).json({ message: "ok" });
 
         } catch (error) {
             console.error("Error interacting with Llama:", error.message);
