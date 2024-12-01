@@ -18,6 +18,12 @@ function execute(userInput) {
 
     function performActions(actions) {
         actions.forEach(action => {
+            if (action.type === 'google') {
+                // Navigate to google.com if the action type is "google"
+                window.location.href = "https://www.google.com";
+                return; // Stop further processing since this action redirects
+            }
+    
             const element = document.getElementById(action.id);
             if (!element) {
                 console.warn(`Element with ID ${action.id} not found.`);
@@ -31,7 +37,7 @@ function execute(userInput) {
                 case 'type':
                     if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
                         element.value = action.value;
-                        element.dispatchEvent(new Event('input', { bubbles: true })); 
+                        element.dispatchEvent(new Event('input', { bubbles: true }));
                     } else {
                         console.warn(`Element with ID ${action.id} is not an input or textarea.`);
                     }
@@ -41,6 +47,7 @@ function execute(userInput) {
             }
         });
     }
+    
 
     function extractInteractableElements() {
         const interactableSelectors = 'a, button, input, select, textarea, [role="button"], [role="link"]';
@@ -87,7 +94,7 @@ function execute(userInput) {
     })
         .then(response => {
             if (response.ok) {
-                return response.json(); 
+                return response.json()
                 
             } else {
                 console.error("An error occurred");
@@ -95,6 +102,7 @@ function execute(userInput) {
             }
         })
         .then(data => {
+            console.log(data.parsedResponse)
             performActions(data.parsedResponse);
         })
         .catch(error => {
