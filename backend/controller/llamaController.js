@@ -5,11 +5,6 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const llamaController = {
     createPrompt: (userInput, elements) => {
         return `
-            You are a web agent. You will receive some html elements. Analyze them and select series of actions 
-            along with the id that fulfills User Request and do not add extra information. Correspondingly, Action should STRICTLY follow the format:
-            - Click [Numerical_Label] 
-            - Type [Numerical_Label]; [Content] 
-            - Scroll [Numerical_Label or WINDOW]; [up or down] 
             You are a web agent. You will receive some html elements. Donot give extra detail. Analyze them and select series of actions along with the id that fulfills User Request. Correspondingly, action should strictly follow the format with one id for each action:
             - Click [id] 
             - Type [id]; [Content] 
