@@ -5,10 +5,10 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const llamaController = {
     createPrompt: (userInput, elements) => {
         return `
-            You are a web agent. You will receive some html elements. Analyze them and select one action along with the id that takes you closer to fullfilling user request. Response should strictly follow the format with no extra detail at all:
+            You are a web agent. You will receive some html elements as json objects. Analyze them and select only the actions along with the id that takes you closer to fullfilling the user request. Sometimes the user request cannot be completed in one iteration so only select actions that take you closer. Donot do unneccessary actions. Response should strictly follow the format with no extra detail at all:
             - Click [id] 
             - Type [id]; [Content] 
-
+            
             replace [id] with the actual number and [Content] with actual text. dont use brackets.
     
             Observation:
@@ -59,6 +59,7 @@ const llamaController = {
 
     sendRequest: async (req, res) => {
         const { userInput, elements } = req.body;
+        console.log(JSON.stringify(elements).length)
 
         if (!userInput || !elements) {
             return res.status(400).json({ error: "userInput and HTML elements are required." });
@@ -76,13 +77,14 @@ const llamaController = {
                             content: prompt,
                         },
                     ],
-                    model: "llama-3.1-70b-versatile",
+                    model: "llama-3.3-70b-versatile",
                 })
                 .then((chatCompletion) => {
                     response = chatCompletion.choices[0]?.message?.content || "";
                 });
             
             console.log(response)
+            console.log("-----------------------------")
             const parsedResponse = llamaController.parseCommands(response);
 
             res.status(200).json({ parsedResponse });
@@ -91,6 +93,7 @@ const llamaController = {
             console.error("Error interacting with Llama:", error.message);
             res.status(500).json({ error: "Failed to interact with Llama." });
         }
+
     },
 };
 

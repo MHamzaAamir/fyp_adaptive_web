@@ -1,10 +1,14 @@
 let actions
 chrome.runtime.onMessage.addListener((message,sender,sendResponse)=>{
     if (message.type === "process_prompt"){
+
+        let url = window.location.href
+        url = url.split("?")[0]
+        
         const elements = extractInteractableElements()
         const userInput = message.prompt
         const payload = {
-            userInput,
+            userInput: userInput + ". Current website is: " + url,
             elements
         }
         chrome.runtime.sendMessage({ type: 'call_api', payload },(response)=>{
