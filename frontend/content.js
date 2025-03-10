@@ -1,5 +1,36 @@
-let actions
-chrome.runtime.onMessage.addListener((message,sender,sendResponse)=>{
+// let actions
+// chrome.runtime.onMessage.addListener((message,sender,sendResponse)=>{
+//     if (message.type === "process_prompt"){
+
+//         let url = window.location.href
+//         url = url.split("?")[0]
+        
+//         const elements = extractInteractableElements()
+//         const userInput = message.prompt
+//         const payload = {
+//             userInput: userInput + ". Current website is: " + url,
+//             elements
+//         }
+//         chrome.runtime.sendMessage({ type: 'call_api', payload },(response)=>{
+//             if (!response.error){
+//                 chrome.runtime.sendMessage({ type: 'actions_ready' })
+//                 actions = response
+//             }else{
+//                 alert('An Error Occurred')
+//                 console.log(response.error)
+//             }
+//         });
+//     } else if (message.type === "perform_actions"){
+//         console.log(actions)
+//         performActions(actions)
+//         chrome.runtime.sendMessage({ type: 'actions_done' })
+//     }
+
+// })
+
+
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "process_prompt"){
 
         let url = window.location.href
@@ -11,22 +42,9 @@ chrome.runtime.onMessage.addListener((message,sender,sendResponse)=>{
             userInput: userInput + ". Current website is: " + url,
             elements
         }
-        chrome.runtime.sendMessage({ type: 'call_api', payload },(response)=>{
-            if (!response.error){
-                chrome.runtime.sendMessage({ type: 'actions_ready' })
-                actions = response
-            }else{
-                alert('An Error Occurred')
-                console.log(response.error)
-            }
-        });
-    } else if (message.type === "perform_actions"){
-        console.log(actions)
-        performActions(actions)
-        chrome.runtime.sendMessage({ type: 'actions_done' })
+        sendResponse(payload)
     }
-
-})
+});
 
 
 function extractInteractableElements() {
