@@ -15,9 +15,16 @@ promptInput.addEventListener('input', () => {
 });
 
 
-sendButton.addEventListener('click', () => {
-    chrome.runtime.sendMessage({ type: "start", prompt});
+sendButton.addEventListener("click", () => {
+    const prompt = promptInput.value;
+    sendButton.disabled = true
+    chrome.runtime.sendMessage({ action: "start",prompt },(response)=>{
+        if (response){
+            sendButton.disabled = false
+        }
+    });
 });
+
 
 // Send the prompt when the send button is clicked
 // sendButton.addEventListener('click', () => {

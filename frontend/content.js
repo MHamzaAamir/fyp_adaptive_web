@@ -1,37 +1,5 @@
-// let actions
-// chrome.runtime.onMessage.addListener((message,sender,sendResponse)=>{
-//     if (message.type === "process_prompt"){
-
-//         let url = window.location.href
-//         url = url.split("?")[0]
-        
-//         const elements = extractInteractableElements()
-//         const userInput = message.prompt
-//         const payload = {
-//             userInput: userInput + ". Current website is: " + url,
-//             elements
-//         }
-//         chrome.runtime.sendMessage({ type: 'call_api', payload },(response)=>{
-//             if (!response.error){
-//                 chrome.runtime.sendMessage({ type: 'actions_ready' })
-//                 actions = response
-//             }else{
-//                 alert('An Error Occurred')
-//                 console.log(response.error)
-//             }
-//         });
-//     } else if (message.type === "perform_actions"){
-//         console.log(actions)
-//         performActions(actions)
-//         chrome.runtime.sendMessage({ type: 'actions_done' })
-//     }
-
-// })
-
-
-
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === "process_prompt"){
+    if (message.action === "process_prompt") {
 
         let url = window.location.href
         url = url.split("?")[0]
@@ -42,9 +10,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             userInput: userInput + ". Current website is: " + url,
             elements
         }
+
         sendResponse(payload)
+
     }
-});
+    if (message.action === "do_actions") {
+        let done
+        done = performActions(message.actions);
+        sendResponse(done);
+        return true
+    }
+    
+  });
+
+
 
 
 function extractInteractableElements() {
@@ -76,14 +55,9 @@ function extractInteractableElements() {
 }
 
 function performActions(actions) {
+    let done = false
     actions.forEach(action => {
-
-
         const element = document.getElementById(action.id);
-        if (!element) {
-            console.warn(`Element with ID ${action.id} not found.`);
-            return;
-        }
 
         switch (action.type) {
             case 'click':
@@ -97,8 +71,12 @@ function performActions(actions) {
                     console.warn(`Element with ID ${action.id} is not an input or textarea.`);
                 }
                 break;
+            case 'done':
+                done = true
+                break;
             default:
                 console.warn(`Unknown action type: ${action.type}`);
         }
     });
+    return done
 }

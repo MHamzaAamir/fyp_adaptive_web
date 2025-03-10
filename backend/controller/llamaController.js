@@ -8,8 +8,10 @@ const llamaController = {
             You are a web agent. You will receive some html elements as json objects. Analyze them and select only the actions along with the id that takes you closer to fullfilling the user request. Sometimes the user request cannot be completed in one iteration so only select actions that take you closer. Donot do unneccessary actions. Response should strictly follow the format with no extra detail at all:
             - Click [id] 
             - Type [id]; [Content] 
+            - Done
             
             replace [id] with the actual number and [Content] with actual text. dont use brackets.
+            return action Done if the task completed
     
             Observation:
             - User Request: "${userInput}"
@@ -24,9 +26,6 @@ const llamaController = {
     
         // Regular expression to match commands like "Click 17", "Type 7; laptop", etc.
         const commandRegex = /(click|type)\s+(\d+)(?:;\s*([^\n]+))?/i;
-    
-        // Regular expression to match "Google" with optional leading characters
-        const googleRegex = /[-\s]*google/i;
 
         const doneRegex = /[-\s]*done/i;
     
@@ -45,10 +44,7 @@ const llamaController = {
                     commandObject.value = value; // Add the value property only if it's present
                 }
                 commands.push(commandObject);
-            } else if (googleRegex.test(line)) {
-                // If the line matches "Google" with or without leading characters
-                commands.push({ type: "google" });
-            }else if (doneRegex.test(line)) {
+            } else if (doneRegex.test(line)) {
                 // If the line matches "Done" with or without leading characters
                 commands.push({ type: "done" });
             }
@@ -59,7 +55,6 @@ const llamaController = {
 
     sendRequest: async (req, res) => {
         const { userInput, elements } = req.body;
-        console.log(JSON.stringify(elements).length)
 
         if (!userInput || !elements) {
             return res.status(400).json({ error: "userInput and HTML elements are required." });
