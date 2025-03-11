@@ -5,13 +5,12 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const llamaController = {
     createPrompt: (userInput, elements) => {
         return `
-            You are a web agent. You will receive some html elements as json objects. Analyze them and select only the actions along with the id that takes you closer to fullfilling the user request. Sometimes the user request cannot be completed in one iteration so only select actions that take you closer. Donot do unneccessary actions. Response should strictly follow the format with no extra detail at all:
+            You are a web agent. You will receive some html elements as json objects. Analyze them and select only the actions, can be multiple actions at a time, along with the id that takes you closer to fullfilling the user request. Sometimes the user request cannot be completed in one iteration so only select actions that take you closer. if you think this iteration will do the task only then add Done in the end. Donot do unneccessary actions. Response should strictly follow the format with no extra detail at all:
             - Click [id] 
             - Type [id]; [Content] 
             - Done
             
             replace [id] with the actual number and [Content] with actual text. dont use brackets.
-            return action Done if the task completed
     
             Observation:
             - User Request: "${userInput}"
@@ -55,6 +54,7 @@ const llamaController = {
 
     sendRequest: async (req, res) => {
         const { userInput, elements } = req.body;
+        console.log("started")
 
         if (!userInput || !elements) {
             return res.status(400).json({ error: "userInput and HTML elements are required." });

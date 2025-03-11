@@ -33,7 +33,7 @@ function executeWorkflow(){
              }else{
                 restartTimeout = setTimeout(() => {
                     executeWorkflow();
-                }, 500);
+                }, 1500);
              }
             });
           });
