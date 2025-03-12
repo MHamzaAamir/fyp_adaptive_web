@@ -26,14 +26,18 @@ function executeWorkflow(){
           chrome.tabs.sendMessage(workingTab, { action: "process_prompt",prompt },async (response) => {
             actions = await call_api(response)
             chrome.tabs.sendMessage(workingTab, { action: "do_actions" ,actions}, (response) => {
-
+            
              if (response){
+                console.log("ended")
                 started = false
                 sendResponseToPopup(response)
              }else{
+                console.log("restarted")
                 restartTimeout = setTimeout(() => {
-                    executeWorkflow();
-                }, 1500);
+                    if (started){
+                        executeWorkflow();
+                    }
+                }, 2500);
              }
             });
           });

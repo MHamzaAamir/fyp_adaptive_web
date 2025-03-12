@@ -18,7 +18,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         let done
         done = performActions(message.actions);
         sendResponse(done);
-        return true
+        
     }
     
   });
@@ -57,13 +57,14 @@ function extractInteractableElements() {
 function performActions(actions) {
     let done = false
     actions.forEach(action => {
-        const element = document.getElementById(action.id);
-
+        let element
         switch (action.type) {
             case 'click':
+                element = document.getElementById(action.id);
                 element.click();
                 break;
             case 'type':
+                element = document.getElementById(action.id);
                 if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
                     element.value = action.value;
                     element.dispatchEvent(new Event('input', { bubbles: true }));
