@@ -1,49 +1,56 @@
 let actions
 let prompt
-let workingTab
-let sendResponseToPopup
 let started = false
 let restartTimeout
+let pastActions = []
+let workingTab 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "start") {
+        pastActions = []
         started = true
-        sendResponseToPopup = sendResponse
         prompt = message.prompt  
+        workingTab = message.workingTab
         executeWorkflow()
     }
-    return true
   });
 
 function executeWorkflow(){
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        workingTab = tabs[0].id
-        if (tabs.length === 0) return;
-        chrome.scripting.executeScript({
-          target: { tabId: workingTab },
-          files: ["content.js"]
-        }, () => {
-          chrome.tabs.sendMessage(workingTab, { action: "process_prompt",prompt },async (response) => {
-            actions = await call_api(response)
-            chrome.tabs.sendMessage(workingTab, { action: "do_actions" ,actions}, (response) => {
-            
-             if (response){
-                console.log("ended")
-                started = false
-                sendResponseToPopup(response)
-             }else{
-                console.log("restarted")
-                restartTimeout = setTimeout(() => {
-                    if (started){
-                        executeWorkflow();
-                    }
-                }, 2500);
-             }
-            });
-          });
 
+    chrome.scripting.executeScript({
+        target: { tabId: workingTab },
+        files: ["content.js"]
+    }, () => {
+        chrome.tabs.sendMessage(workingTab, { action: "process_prompt",prompt },async (response) => {
+        let {parsedResponse,success} = await call_api(response)
+        actions = parsedResponse
+        if (success){
+            chrome.tabs.sendMessage(workingTab, { action: "do_actions" ,actions}, (response) => {
+        
+                if (response){
+                    console.log("ended")
+                    started = false
+                //    chrome.storage.local.set({disabled:false})
+                }else{
+                    console.log("restarted")
+                    restartTimeout = setTimeout(() => {
+                        if (started){
+                            executeWorkflow();
+                        }
+                    }, 2500);
+                }
+                });
+        }else{
+            restartTimeout = setTimeout(() => {
+                if (started){
+                    executeWorkflow();
+                }
+            }, 3000);
+        }
         });
-      });
+
+    });
+
 }
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -58,9 +65,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 })
 
 
-call_api = async (payload) => {
+async function call_api (payload) {
     let response;
+    let success
+    let parsedResponse
     try {
+        payload.pastActions = pastActions
         response = await fetch("http://localhost:3000/api/sendRequest", {
             method: "POST",
             headers: {
@@ -72,12 +82,18 @@ call_api = async (payload) => {
 
         if (response.ok) {
             const jsonResponse = await response.json();
-            return jsonResponse.parsedResponse
+            parsedResponse = jsonResponse.parsedResponse
+            if(jsonResponse.description){
+                pastActions.push(jsonResponse.description)
+            }
+            success = true
+            return {parsedResponse,success}
         } else {
-            throw error("API Failed")
+            throw new Error("API Failed")
         }
     } catch (error) {
-        console.error("Error:", error);
+        success = false
+        return {parsedResponse,success}
     }
 }
 
