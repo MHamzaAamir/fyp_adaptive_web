@@ -2,17 +2,18 @@ require("dotenv").config();
 const Groq = require("groq-sdk");
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-const llamaController = {
+const LLMController = {
     createPrompt: (userInput, elements,pastActions) => {
         return `
-            You are a web agent. You will receive some html elements as json objects. Analyze them and select only the actions, can be multiple actions at a time, along with the id that takes you closer to fullfilling the user request. Sometimes the user request cannot be completed in one iteration so only select actions that take you closer. if you think this iteration will do the task only then add Done in the end. Donot do unneccessary actions. Response should strictly follow the format with no extra detail at all:
+            You are a web agent. You will receive some html elements as json structured objects. Analyze them and select only the actions, can be multiple actions at a time, along with the id that takes you closer to fullfilling the user request. Sometimes the user request cannot be completed in one iteration so only select actions that take you closer. if you think this iteration will do the task only then add Done in the end. Donot do unneccessary actions. Response should strictly follow the format with no extra detail at all:
             - Click [id] 
             - Type [id]; [Content] 
             - Done
             
             replace [id] with the actual number and [Content] with actual text. dont use brackets.
 
-            Also generate a small phrase describing what you have just achieved
+            Also generate a small phrase describing what you have just achieved.
+            If you have made a google search then explicity add in the action.
             Description : [description]
     
             Observation:
@@ -71,7 +72,7 @@ const llamaController = {
         }
 
         try {
-            const prompt = llamaController.createPrompt(userInput, elements,pastActions);
+            const prompt = LLMController.createPrompt(userInput, elements,pastActions);
             let response = "";
 
             await groq.chat.completions
@@ -82,7 +83,7 @@ const llamaController = {
                             content: prompt,
                         },
                     ],
-                    model: "meta-llama/llama-4-scout-17b-16e-instruct",
+                    model: "llama-3.3-70b-versatile",
                 })
                 .then((chatCompletion) => {
                     response = chatCompletion.choices[0]?.message?.content || "";
@@ -90,16 +91,16 @@ const llamaController = {
             
             
             console.log(`response for ${userInput}`)
-            let {parsedResponse,description} = llamaController.parseCommands(response);
+            let {parsedResponse,description} = LLMController.parseCommands(response);
 
             res.status(200).json({ parsedResponse,description });
 
         } catch (error) {
-            console.error("Error interacting with Llama:", error.message);
+            console.error("Error: ", error.message);
             res.status(500).json({ error: "Failed to interact with Llama." });
         }
 
     },
 };
 
-module.exports = llamaController;
+module.exports = LLMController;

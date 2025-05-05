@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router()
-const llamaController = require("../controller/llamaController")
+const LLMController = require("../controller/llmController")
 
-router.post('/sendRequest',llamaController.sendRequest)
+router.post('/sendRequest',LLMController.sendRequest)
 
 
 module.exports = router;
