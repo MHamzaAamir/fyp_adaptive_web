@@ -1,5 +1,12 @@
 const sendButton = document.getElementById('sendButton');
+const resetButton = document.getElementById('resetButton');
 const promptInput = document.getElementById('promptInput');
+
+
+resetButton.addEventListener('click',()=>{
+    chrome.storage.local.set({ disabled:false,prompt:"",started:false });
+    promptInput.value = ""
+})
 
 // Load the saved prompt from chrome.storage when the popup is opened
 chrome.storage.local.get(['prompt'], (result) => {

@@ -9,6 +9,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "start") {
         pastActions = []
         started = true
+        chrome.storage.local.set({ started:true});
         prompt = message.prompt  
         workingTab = message.workingTab
         executeWorkflow()
@@ -30,6 +31,7 @@ function executeWorkflow(){
                 if (response){
                     console.log("ended")
                     started = false
+                    chrome.storage.local.set({started:false})
                     chrome.storage.local.set({disabled:false})
                 }else{
                     console.log("restarted")
@@ -96,4 +98,10 @@ async function call_api (payload) {
         return {parsedResponse,success}
     }
 }
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === "local" && changes.started) {
+        started = changes.started.newValue
+    }
+});
 
