@@ -7,11 +7,11 @@ chrome.storage.local.get(['prompt'], (result) => {
         promptInput.value = result.prompt;
     }
 });
-// chrome.storage.local.get(['disabled'], (result) => {
-//     if (result.disabled) {
-//         sendButton.disabled = result.disabled;
-//     }
-// });
+chrome.storage.local.get(['disabled'], (result) => {
+    if (result.disabled) {
+        sendButton.disabled = result.disabled;
+    }
+});
 
 // Save the prompt to chrome.storage whenever the input changes
 promptInput.addEventListener('input', () => {
@@ -21,7 +21,7 @@ promptInput.addEventListener('input', () => {
 
 sendButton.addEventListener("click", () => {
     const prompt = promptInput.value;
-    // chrome.storage.local.set({ disabled:true });
+    chrome.storage.local.set({ disabled:true });
     let workingTab
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         workingTab = tabs[0].id
@@ -29,8 +29,8 @@ sendButton.addEventListener("click", () => {
     })
 });
 
-// chrome.storage.onChanged.addListener((changes, namespace) => {
-//     if (namespace === "local" && changes.disabled) {
-//         sendButton.disabled = changes.disabled.newValue
-//     }
-// });
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === "local" && changes.disabled) {
+        sendButton.disabled = changes.disabled.newValue
+    }
+});

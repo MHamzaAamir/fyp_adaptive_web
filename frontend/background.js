@@ -30,7 +30,7 @@ function executeWorkflow(){
                 if (response){
                     console.log("ended")
                     started = false
-                //    chrome.storage.local.set({disabled:false})
+                    chrome.storage.local.set({disabled:false})
                 }else{
                     console.log("restarted")
                     restartTimeout = setTimeout(() => {
