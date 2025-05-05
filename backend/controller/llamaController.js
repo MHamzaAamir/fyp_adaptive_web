@@ -64,6 +64,7 @@ const llamaController = {
     sendRequest: async (req, res) => {
         const { userInput, elements,pastActions } = req.body;
         console.log(`request for ${userInput}`)
+        console.log(pastActions)
 
         if (!userInput || !elements || !pastActions) {
             return res.status(400).json({ error: "All fields are required." });
@@ -81,7 +82,7 @@ const llamaController = {
                             content: prompt,
                         },
                     ],
-                    model: "llama-3.3-70b-versatile",
+                    model: "meta-llama/llama-4-scout-17b-16e-instruct",
                 })
                 .then((chatCompletion) => {
                     response = chatCompletion.choices[0]?.message?.content || "";
