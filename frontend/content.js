@@ -106,12 +106,15 @@ function performActions(actions) {
     let done = false;
     actions.forEach(action => {
         let element = document.getElementById(action.id);
-        if (!element) {
-            console.warn(`Element with ID ${action.id} not found.`);
-            return;
+
+        if (action.type != "done"){
+            if (!element) {
+                console.warn(`Element with ID ${action.id} not found.`);
+                return;
+            }
+            highlightElement(element); 
         }
 
-        highlightElement(element); 
         switch (action.type) {
             case 'click':
                 element.click();
