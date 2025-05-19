@@ -55,7 +55,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 // }
 
 function extractInteractableElements() {
-    const interactableSelectors = 'li, a, button, input, select, textarea, [role="button"], [role="link"]';
+    const interactableSelectors = 'li, a, button, input, select, textarea, [role="button"], [role="link"], [role="textbox"]';
     const elements = document.querySelectorAll(interactableSelectors);
 
     const elementsData = [];
