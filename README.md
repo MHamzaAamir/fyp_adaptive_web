@@ -26,8 +26,8 @@ This repository is organized into two main folders:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/your-username/adaptive-web-interaction.git](https://github.com/your-username/adaptive-web-interaction.git)
-    cd adaptive-web-interaction
+    git clone https://github.com/MHamzaAamir/fyp_adaptive_web.git
+    cd fyp_adaptive_web
     ```
 
 2.  **Backend Setup:**
