@@ -8,7 +8,7 @@ app.use(cors())
 
 
 
-const apiRoute = require("./router/apiroute")
+const apiRoute = require("./routes/apiroute")
 
 app.use('/api', apiRoute)
 
